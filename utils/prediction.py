@@ -203,5 +203,13 @@ def predict_hourly(user_input):
         "Hour": future_df["hour"].values[:n],
         "Predicted_ED_Visits": hourly_values[:n]
     })
+    
+     hourly_xai = {
+        "model": model,
+        "training_dataset": dataset,
+        "future_df": prediction_data,
+    }
 
-    return result
+    return result, hourly_xai
+
+
