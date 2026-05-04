@@ -554,8 +554,9 @@ elif st.session_state.page == "input":
 
         with st.spinner("Generating forecast..."):
             daily_df, daily_xai = predict_daily(user_input)
-            hourly_df, hourly_xai = predict_hourly(user_input)
-
+            hourly_df = predict_hourly(user_input)
+            hourly_xai = predict_hourly(user_input)
+            
             first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
             hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
 
