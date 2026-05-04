@@ -552,28 +552,27 @@ elif st.session_state.page == "input":
         }
         st.session_state.user_input = user_input
 
-        with st.spinner("Generating forecast..."):
-            daily_df, daily_xai = predict_daily(user_input)
-            hourly_df = predict_hourly(user_input)
-            hourly_xai = predict_hourly(user_input)
-            
-            first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
-            hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
+    with st.spinner("Generating forecast..."):
+        daily_df, daily_xai = predict_daily(user_input)
+        hourly_df, hourly_xai = predict_hourly(user_input)
 
-            if hourly_sum > 0:
-                hourly_df["Predicted_ED_Visits"] = (
-                    hourly_df["Predicted_ED_Visits"] / hourly_sum
-                ) * first_day_prediction * 0.5
+        first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
+        hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
 
-            hourly_df["Predicted_ED_Visits"] = hourly_df["Predicted_ED_Visits"].round().astype(int)
+    if hourly_sum > 0:
+        hourly_df["Predicted_ED_Visits"] = (
+            hourly_df["Predicted_ED_Visits"] / hourly_sum
+        ) * first_day_prediction * 0.5
 
-        st.session_state.daily_df  = daily_df
-        st.session_state.hourly_df = hourly_df
-        st.session_state.daily_xai = daily_xai
-        st.session_state.hourly_xai = hourly_xai
-        st.session_state.page      = "results"
-        st.rerun()
+    hourly_df["Predicted_ED_Visits"] = hourly_df["Predicted_ED_Visits"].round().astype(int)
 
+    
+        daily_df   = st.session_state.daily_df
+        hourly_df  = st.session_state.hourly_df
+        user_input = st.session_state.user_input
+        daily_xai  = st.session_state.daily_xai
+        hourly_xai = st.session_state.hourly_xai
+      
 
 # ════════════════════════════════════════════════════════════════════════════
 # PAGE 3 — Results
