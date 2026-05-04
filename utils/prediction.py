@@ -43,15 +43,6 @@ def predict_daily(user_input):
 
     df = pd.read_csv("data/clean_ED_data.csv")
     
-    if "date" not in df.columns:
-        if "Date" in df.columns:
-            df = df.rename(columns={"Date": "date"})
-        elif "datetime" in df.columns:
-            df = df.rename(columns={"datetime": "date"})
-        else:
-            raise ValueError(f"Missing required column 'date'.")
-
-    
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
 
@@ -136,15 +127,6 @@ def predict_hourly(user_input):
 
     df = pd.read_csv("data/clean_ED_data_hours.csv")
     
-    if "date" not in df.columns:
-        if "Date" in df.columns:
-            df = df.rename(columns={"Date": "date"})
-        elif "datetime" in df.columns:
-            df = df.rename(columns={"datetime": "date"})
-        else:
-            raise ValueError(f"Missing required column 'date'.")
-
-
     df["datetime"] = pd.to_datetime(df["datetime"])
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("datetime").reset_index(drop=True)
