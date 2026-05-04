@@ -49,7 +49,7 @@ def predict_daily(user_input):
         elif "datetime" in df.columns:
             df = df.rename(columns={"datetime": "date"})
         else:
-            raise ValueError(f"Missing required column 'date'. Available columns: {df.columns.tolist()}")
+            raise ValueError(f"Missing required column 'date'.")
 
     
     df["date"] = pd.to_datetime(df["date"])
@@ -142,7 +142,7 @@ def predict_hourly(user_input):
         elif "datetime" in df.columns:
             df = df.rename(columns={"datetime": "date"})
         else:
-            raise ValueError(f"Missing required column 'date'. Available columns: {df.columns.tolist()}")
+            raise ValueError(f"Missing required column 'date'.")
 
 
     df["datetime"] = pd.to_datetime(df["datetime"])
