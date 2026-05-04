@@ -479,21 +479,7 @@ def render_daily_xai(model, training_dataset, future_df):
                     )
                     st.pyplot(figures["attention"])
 
-            if "encoder_variables" in figures:
-                with st.expander("Which past factors affected the forecast?", expanded=True):
-                    st.caption(
-                        "This chart shows the historical information used by the model, such as previous ED visits, "
-                        "past weather, and past calendar patterns."
-                    )
-                    st.pyplot(figures["encoder_variables"])
 
-            if "decoder_variables" in figures:
-                with st.expander("Which future known factors affected the forecast?", expanded=True):
-                    st.caption(
-                        "This chart shows information known before the forecast period, such as day of week, "
-                        "month, weekend status, holiday status, and timing features."
-                    )
-                    st.pyplot(figures["decoder_variables"])
 
             if "static_variables" in figures:
                 with st.expander("What general context did the model use?", expanded=False):
