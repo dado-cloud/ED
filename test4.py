@@ -764,16 +764,11 @@ elif st.session_state.page == "results":
 
         prediction_mean = predictions.mean()
         prediction_std = predictions.std()
-        prediction_min = predictions.min()
-        prediction_max = predictions.max()
-        prediction_range = prediction_max - prediction_min
         unique_predictions = predictions.nunique()
 
         # Historical baseline from actual ED data
         baseline_mean = 23.949210
         baseline_std = 21.660479
-        baseline_min = 1.0
-        baseline_max = 286.0
 
         # ── 1) Mean Shift Check ─────────────────────────────────────────────
         mean_shift = abs(prediction_mean - baseline_mean)
@@ -873,22 +868,10 @@ elif st.session_state.page == "results":
 
             <div style="
                 display:grid;
-                grid-template-columns:repeat(3,1fr);
+                grid-template-columns:repeat(2,1fr);
                 gap:14px;
                 margin-bottom:14px;
             ">
-
-                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
-                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
-                        Forecast Mean
-                    </div>
-                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
-                        {prediction_mean:.2f}
-                    </div>
-                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Historical mean: {baseline_mean:.2f}
-                    </div>
-                </div>
 
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
@@ -898,7 +881,7 @@ elif st.session_state.page == "results":
                         {mean_shift:.2f}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Difference from baseline
+                        Difference from historical baseline
                     </div>
                 </div>
 
@@ -937,11 +920,11 @@ elif st.session_state.page == "results":
                 line-height:1.5;
             ">
                 Note: This card provides an early monitoring signal based on forecast behavior and historical baseline comparison.
+                It does not calculate real-time MAE because actual future ED visit values are not available at prediction time.
             </div>
 
         </div>
         """)
-
                
 
         # ── Section 4:  Forecast Explanation ───────────────
