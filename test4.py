@@ -752,6 +752,79 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
+        
+
+        # ── Section 3: Model Health Summary ─────────────────────────────────
+        st.html("""
+        <div class="sec-hdr">
+            <span class="sec-hdr-lbl">🩺 &nbsp;Model Health Summary</span>
+        </div>
+        """)
+
+        # Fixed model metrics from evaluation
+        mae = 4.46
+        rmse = 5.02
+        mape = 41.50
+
+        # Basic performance status
+        if mae <= 5:
+            performance_status = "Good"
+            performance_icon = "🟢"
+        else:
+            performance_status = "Needs Review"
+            performance_icon = "🟡"
+
+        # Simple drift risk based on prediction behavior
+        daily_mean = daily_df["Predicted_ED_Visits"].mean()
+        baseline_mean = 23.9
+
+        drift_difference = abs(daily_mean - baseline_mean)
+
+        if drift_difference <= 10:
+            drift_risk = "Low"
+            drift_icon = "🟢"
+            recommendation = "Continue monitoring."
+        else:
+            drift_risk = "Medium"
+            drift_icon = "🟡"
+            recommendation = "Review prediction behavior and monitor incoming data."
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(
+                label="Model Status",
+                value="🟢 Active"
+            )
+
+        with col2:
+            st.metric(
+                label="Performance",
+                value=f"{performance_icon} {performance_status}"
+            )
+
+        with col3:
+            st.metric(
+                label="Drift Risk",
+                value=f"{drift_icon} {drift_risk}"
+            )
+
+        with col4:
+            st.metric(
+                label="MAE",
+                value=f"{mae:.2f}"
+            )
+
+        st.info(f"Recommendation: {recommendation}")
+
+        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+
+        # ── Section 4: Forecast Explanation ─────────────────────────────────
+        if daily_xai is not None or hourly_xai is not None:
+            render_xai_comparison(daily_xai, hourly_xai)
+        else:
+            st.warning("Forecast explanation is not available for this prediction.")
+
 
         # ── Section 3:  Forecast Explanation ───────────────
         if daily_xai is not None or hourly_xai is not None:
