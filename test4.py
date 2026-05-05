@@ -834,11 +834,11 @@ elif st.session_state.page == "results":
 
         hourly_mean_shift = abs(hourly_prediction_mean - hourly_baseline_mean)
 
-        if hourly_mean_shift <= 2:
+        if hourly_mean_shift <= 5:
             hourly_shift_status = "Low"
             hourly_shift_icon = "🟢"
             hourly_shift_issue = "Hourly forecast mean is close to the historical hourly baseline."
-        elif hourly_mean_shift <= 5:
+        elif hourly_mean_shift <= 10:
             hourly_shift_status = "Medium"
             hourly_shift_icon = "🟡"
             hourly_shift_issue = "Hourly forecast mean shows a moderate shift from the historical hourly baseline."
