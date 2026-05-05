@@ -752,116 +752,197 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-                # ── Section 3: Model Behavior Monitoring ─────────────────────────────
+        # ── Section 3: Monitoring & Drift Detection ──────────────────────────
         st.html("""
         <div class="sec-hdr">
-            <span class="sec-hdr-lbl">🩺 &nbsp;Model Behavior Monitoring</span>
+            <span class="sec-hdr-lbl">🩺 &nbsp;Monitoring & Drift Detection</span>
         </div>
         """)
 
-        # Fixed evaluation metrics from test results
-        mae = 4.46
-        rmse = 5.02
-        mape = 41.50
+        # Current predictions
+        predictions = daily_df["Predicted_ED_Visits"]
 
-        # Check prediction variability
-        prediction_mean = daily_df["Predicted_ED_Visits"].mean()
-        prediction_std = daily_df["Predicted_ED_Visits"].std()
-        prediction_min = daily_df["Predicted_ED_Visits"].min()
-        prediction_max = daily_df["Predicted_ED_Visits"].max()
+        prediction_mean = predictions.mean()
+        prediction_std = predictions.std()
+        prediction_min = predictions.min()
+        prediction_max = predictions.max()
         prediction_range = prediction_max - prediction_min
+        unique_predictions = predictions.nunique()
 
-        # Performance status based on previous evaluation
-        if mae <= 5:
-            performance_status = "Good"
-            performance_icon = "🟢"
+        # Historical baseline from actual ED data
+        baseline_mean = 23.949210
+        baseline_std = 21.660479
+        baseline_min = 1.0
+        baseline_max = 286.0
+
+        # ── 1) Mean Shift Check ─────────────────────────────────────────────
+        mean_shift = abs(prediction_mean - baseline_mean)
+
+        if mean_shift <= 5:
+            shift_status = "Low"
+            shift_icon = "🟢"
+            shift_issue = "Forecast mean is close to the historical baseline."
+        elif mean_shift <= 10:
+            shift_status = "Medium"
+            shift_icon = "🟡"
+            shift_issue = "Forecast mean shows a moderate shift from the historical baseline."
         else:
-            performance_status = "Needs Review"
-            performance_icon = "🟡"
+            shift_status = "High"
+            shift_icon = "🔴"
+            shift_issue = "Forecast mean is far from the historical baseline."
 
-        # Behavior check: detects overly similar / flat predictions
-        if prediction_std < 1 or prediction_range <= 2:
+        # ── 2) Prediction Behavior Check ────────────────────────────────────
+        # This detects overly flat predictions, not actual accuracy.
+        if unique_predictions <= 2 or prediction_std < 1:
             behavior_status = "Needs Review"
             behavior_icon = "🟡"
-            issue_detected = "Low prediction variability"
-            recommendation = "Predictions are too similar. Review feature sensitivity, input preprocessing, and model retraining."
+            behavior_issue = "Predictions are highly similar across the forecast horizon."
         else:
             behavior_status = "Stable"
             behavior_icon = "🟢"
-            issue_detected = "No major issue detected"
-            recommendation = "Continue monitoring prediction behavior over time."
+            behavior_issue = "Prediction variation looks acceptable for the current forecast."
 
+        # ── 3) Overall Monitoring Status ────────────────────────────────────
+        if shift_status == "High" or behavior_status == "Needs Review":
+            monitoring_status = "Action Recommended"
+            monitoring_icon = "🟡"
+            recommendation = (
+                "Review the input data, preprocessing steps, and model sensitivity. "
+                "If this behavior continues with new data, retraining or model adjustment is recommended."
+            )
+            alert_bg = "#fff8e8"
+            alert_border = "#f0d28a"
+            alert_color = "#b87900"
+        else:
+            monitoring_status = "Healthy"
+            monitoring_icon = "🟢"
+            recommendation = (
+                "Continue monitoring predictions over time. Actual performance can be evaluated once real ED visit values become available."
+            )
+            alert_bg = "#eaf4ff"
+            alert_border = "#d0e4f5"
+            alert_color = "#1560a8"
+
+        # ── Display Card ────────────────────────────────────────────────────
         st.html(f"""
         <div style="
             background:white;
             border:1px solid #d0e4f5;
-            border-radius:16px;
+            border-radius:18px;
             box-shadow:0 4px 16px rgba(21,96,168,0.07);
-            padding:18px 22px;
-            margin-bottom:16px;
+            padding:20px 22px;
+            margin-bottom:18px;
             font-family:Arial, sans-serif;
         ">
+
             <div style="
                 display:grid;
-                grid-template-columns:repeat(4,1fr);
+                grid-template-columns:repeat(3,1fr);
                 gap:14px;
+                margin-bottom:14px;
             ">
+
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Model Status
+                        Monitoring Status
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        🟢 Active
+                        {monitoring_icon} {monitoring_status}
                     </div>
                 </div>
 
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Test Performance
-                    </div>
-                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {performance_icon} {performance_status}
-                    </div>
-                </div>
-
-                <div style="background:#fff8e8;border:1px solid #f0d28a;border-radius:14px;padding:14px 16px;">
-                    <div style="font-size:12px;color:#7a5a00;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
                         Prediction Behavior
                     </div>
-                    <div style="font-size:18px;color:#b87900;font-weight:800;">
+                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
                         {behavior_icon} {behavior_status}
                     </div>
                 </div>
 
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        MAE
+                        Drift Risk
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {mae:.2f}
+                        {shift_icon} {shift_status}
                     </div>
                 </div>
+
             </div>
 
             <div style="
-                margin-top:14px;
-                background:#fff8e8;
-                border:1px solid #f0d28a;
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:14px;
+                margin-bottom:14px;
+            ">
+
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        Forecast Mean
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {prediction_mean:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Historical mean: {baseline_mean:.2f}
+                    </div>
+                </div>
+
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        Mean Shift
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {mean_shift:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Difference from baseline
+                    </div>
+                </div>
+
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        Forecast Variation
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        Std: {prediction_std:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Historical std: {baseline_std:.2f}
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="
+                background:{alert_bg};
+                border:1px solid {alert_border};
                 border-radius:12px;
-                padding:12px 16px;
+                padding:13px 16px;
                 color:#1e3550;
                 font-size:14px;
                 line-height:1.6;
             ">
-                <strong style="color:#b87900;">Issue Detected:</strong> {issue_detected}<br>
-                <strong style="color:#1560a8;">Prediction Range:</strong> {prediction_range:.2f} visits &nbsp; | &nbsp;
-                <strong style="color:#1560a8;">Std:</strong> {prediction_std:.2f}<br>
+                <strong style="color:{alert_color};">Monitoring Insight:</strong> {behavior_issue}<br>
+                <strong style="color:{alert_color};">Mean Shift Insight:</strong> {shift_issue}<br>
                 <strong style="color:#1560a8;">Recommendation:</strong> {recommendation}
             </div>
+
+            <div style="
+                margin-top:10px;
+                color:#6b7f95;
+                font-size:12px;
+                line-height:1.5;
+            ">
+                Note: This card provides an early monitoring signal based on forecast behavior and historical baseline comparison.
+            </div>
+
         </div>
         """)
-        
 
+               
 
         # ── Section 4:  Forecast Explanation ───────────────
         if daily_xai is not None or hourly_xai is not None:
