@@ -752,7 +752,7 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-                # ── Section 3: Monitoring & Drift Detection ──────────────────────────
+        # ── Section 3: Monitoring & Drift Detection ──────────────────────────
         st.html("""
         <div class="sec-hdr">
             <span class="sec-hdr-lbl">🩺 &nbsp;Monitoring & Drift Detection</span>
@@ -862,7 +862,7 @@ elif st.session_state.page == "results":
 
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Mean Shift Risk
+                        Drift Risk
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
                         {shift_icon} {shift_status}
@@ -937,7 +937,6 @@ elif st.session_state.page == "results":
                 line-height:1.5;
             ">
                 Note: This card provides an early monitoring signal based on forecast behavior and historical baseline comparison.
-                It does not calculate real-time MAE because actual future ED visit values are not available at prediction time.
             </div>
 
         </div>
