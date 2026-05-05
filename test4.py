@@ -752,44 +752,39 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-                # ── Section 3: Model Behavior Monitoring ─────────────────────────────
+        # ── Section 3: Prediction Behavior Check ─────────────────────────────
         st.html("""
         <div class="sec-hdr">
-            <span class="sec-hdr-lbl">🩺 &nbsp;Model Behavior Monitoring</span>
+            <span class="sec-hdr-lbl">🩺 &nbsp;Prediction Behavior Check</span>
         </div>
         """)
 
-        # Fixed evaluation metrics from test results
-        mae = 4.46
-        rmse = 5.02
-        mape = 41.50
+        # Check current prediction behavior
+        predictions = daily_df["Predicted_ED_Visits"]
 
-        # Check prediction variability
-        prediction_mean = daily_df["Predicted_ED_Visits"].mean()
-        prediction_std = daily_df["Predicted_ED_Visits"].std()
-        prediction_min = daily_df["Predicted_ED_Visits"].min()
-        prediction_max = daily_df["Predicted_ED_Visits"].max()
+        prediction_std = predictions.std()
+        prediction_min = predictions.min()
+        prediction_max = predictions.max()
         prediction_range = prediction_max - prediction_min
+        unique_predictions = predictions.nunique()
 
-        # Performance status based on previous evaluation
-        if mae <= 5:
-            performance_status = "Good"
-            performance_icon = "🟢"
-        else:
-            performance_status = "Needs Review"
-            performance_icon = "🟡"
-
-        # Behavior check: detects overly similar / flat predictions
-        if prediction_std < 1 or prediction_range <= 2:
+        # Detect overly similar / flat predictions
+        if prediction_std < 1 or prediction_range <= 2 or unique_predictions <= 2:
             behavior_status = "Needs Review"
             behavior_icon = "🟡"
             issue_detected = "Low prediction variability"
-            recommendation = "Predictions are too similar. Review feature sensitivity, input preprocessing, and model retraining."
+            recommendation = "Predictions are highly similar. Review feature sensitivity, input preprocessing, or retrain the model with stronger signals."
+            card_bg = "#fff8e8"
+            card_border = "#f0d28a"
+            main_color = "#b87900"
         else:
             behavior_status = "Stable"
             behavior_icon = "🟢"
             issue_detected = "No major issue detected"
-            recommendation = "Continue monitoring prediction behavior over time."
+            recommendation = "Prediction values show acceptable variation. Continue monitoring over time."
+            card_bg = "#f7fbff"
+            card_border = "#d0e4f5"
+            main_color = "#1560a8"
 
         st.html(f"""
         <div style="
@@ -803,64 +798,53 @@ elif st.session_state.page == "results":
         ">
             <div style="
                 display:grid;
-                grid-template-columns:repeat(4,1fr);
+                grid-template-columns:repeat(3,1fr);
                 gap:14px;
             ">
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Model Status
-                    </div>
-                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        🟢 Active
-                    </div>
-                </div>
-
-                <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
-                    <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Test Performance
-                    </div>
-                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {performance_icon} {performance_status}
-                    </div>
-                </div>
-
-                <div style="background:#fff8e8;border:1px solid #f0d28a;border-radius:14px;padding:14px 16px;">
-                    <div style="font-size:12px;color:#7a5a00;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
                         Prediction Behavior
                     </div>
-                    <div style="font-size:18px;color:#b87900;font-weight:800;">
+                    <div style="font-size:18px;color:{main_color};font-weight:800;">
                         {behavior_icon} {behavior_status}
                     </div>
                 </div>
 
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        MAE
+                        Prediction Range
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {mae:.2f}
+                        {prediction_range:.2f}
+                    </div>
+                </div>
+
+                <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
+                        Variation Std
+                    </div>
+                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
+                        {prediction_std:.2f}
                     </div>
                 </div>
             </div>
 
             <div style="
                 margin-top:14px;
-                background:#fff8e8;
-                border:1px solid #f0d28a;
+                background:{card_bg};
+                border:1px solid {card_border};
                 border-radius:12px;
                 padding:12px 16px;
                 color:#1e3550;
                 font-size:14px;
                 line-height:1.6;
             ">
-                <strong style="color:#b87900;">Issue Detected:</strong> {issue_detected}<br>
-                <strong style="color:#1560a8;">Prediction Range:</strong> {prediction_range:.2f} visits &nbsp; | &nbsp;
-                <strong style="color:#1560a8;">Std:</strong> {prediction_std:.2f}<br>
+                <strong style="color:{main_color};">Issue Detected:</strong> {issue_detected}<br>
+                <strong style="color:#1560a8;">Unique Prediction Values:</strong> {unique_predictions}<br>
                 <strong style="color:#1560a8;">Recommendation:</strong> {recommendation}
             </div>
         </div>
         """)
-        
 
         
 
