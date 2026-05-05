@@ -752,18 +752,26 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-        # ── Section 3: Model Health Summary ─────────────────────────────────
+                # ── Section 3: Model Behavior Monitoring ─────────────────────────────
         st.html("""
         <div class="sec-hdr">
-            <span class="sec-hdr-lbl">🩺 &nbsp;Model Health Summary</span>
+            <span class="sec-hdr-lbl">🩺 &nbsp;Model Behavior Monitoring</span>
         </div>
         """)
 
+        # Fixed evaluation metrics from test results
         mae = 4.46
-        baseline_mean = 23.9
-        daily_mean = daily_df["Predicted_ED_Visits"].mean()
-        drift_difference = abs(daily_mean - baseline_mean)
+        rmse = 5.02
+        mape = 41.50
 
+        # Check prediction variability
+        prediction_mean = daily_df["Predicted_ED_Visits"].mean()
+        prediction_std = daily_df["Predicted_ED_Visits"].std()
+        prediction_min = daily_df["Predicted_ED_Visits"].min()
+        prediction_max = daily_df["Predicted_ED_Visits"].max()
+        prediction_range = prediction_max - prediction_min
+
+        # Performance status based on previous evaluation
         if mae <= 5:
             performance_status = "Good"
             performance_icon = "🟢"
@@ -771,14 +779,17 @@ elif st.session_state.page == "results":
             performance_status = "Needs Review"
             performance_icon = "🟡"
 
-        if drift_difference <= 10:
-            drift_risk = "Low"
-            drift_icon = "🟢"
-            recommendation = "Continue monitoring."
+        # Behavior check: detects overly similar / flat predictions
+        if prediction_std < 1 or prediction_range <= 2:
+            behavior_status = "Needs Review"
+            behavior_icon = "🟡"
+            issue_detected = "Low prediction variability"
+            recommendation = "Predictions are too similar. Review feature sensitivity, input preprocessing, and model retraining."
         else:
-            drift_risk = "Medium"
-            drift_icon = "🟡"
-            recommendation = "Review prediction behavior and monitor incoming data."
+            behavior_status = "Stable"
+            behavior_icon = "🟢"
+            issue_detected = "No major issue detected"
+            recommendation = "Continue monitoring prediction behavior over time."
 
         st.html(f"""
         <div style="
@@ -806,19 +817,19 @@ elif st.session_state.page == "results":
 
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Performance
+                        Test Performance
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
                         {performance_icon} {performance_status}
                     </div>
                 </div>
 
-                <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
-                    <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Drift Risk
+                <div style="background:#fff8e8;border:1px solid #f0d28a;border-radius:14px;padding:14px 16px;">
+                    <div style="font-size:12px;color:#7a5a00;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
+                        Prediction Behavior
                     </div>
-                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {drift_icon} {drift_risk}
+                    <div style="font-size:18px;color:#b87900;font-weight:800;">
+                        {behavior_icon} {behavior_status}
                     </div>
                 </div>
 
@@ -834,25 +845,27 @@ elif st.session_state.page == "results":
 
             <div style="
                 margin-top:14px;
-                background:#eaf4ff;
-                border:1px solid #d0e4f5;
+                background:#fff8e8;
+                border:1px solid #f0d28a;
                 border-radius:12px;
                 padding:12px 16px;
                 color:#1e3550;
                 font-size:14px;
-                line-height:1.5;
+                line-height:1.6;
             ">
+                <strong style="color:#b87900;">Issue Detected:</strong> {issue_detected}<br>
+                <strong style="color:#1560a8;">Prediction Range:</strong> {prediction_range:.2f} visits &nbsp; | &nbsp;
+                <strong style="color:#1560a8;">Std:</strong> {prediction_std:.2f}<br>
                 <strong style="color:#1560a8;">Recommendation:</strong> {recommendation}
             </div>
         </div>
         """)
-
         
 
         
 
 
-        # ── Section 3:  Forecast Explanation ───────────────
+        # ── Section 4:  Forecast Explanation ───────────────
         if daily_xai is not None or hourly_xai is not None:
             render_xai_comparison(daily_xai, hourly_xai)
         else:
