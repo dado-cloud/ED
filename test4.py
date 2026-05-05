@@ -752,7 +752,7 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-                # ── Section 3: Monitoring & Drift Detection ──────────────────────────
+        # ── Section 3: Monitoring & Drift Detection ──────────────────────────
         st.html("""
         <div class="sec-hdr">
             <span class="sec-hdr-lbl">🩺 &nbsp;Monitoring & Drift Detection</span>
@@ -829,8 +829,8 @@ elif st.session_state.page == "results":
         hourly_unique_predictions = hourly_predictions.nunique()
 
         # Historical baseline from actual hourly ED data
-        hourly_baseline_mean = 0.0
-        hourly_baseline_std = 0.0
+        hourly_baseline_mean = 8.309594
+        hourly_baseline_std = 9.994404
 
         hourly_mean_shift = abs(hourly_prediction_mean - hourly_baseline_mean)
 
@@ -847,7 +847,7 @@ elif st.session_state.page == "results":
             hourly_shift_icon = "🔴"
             hourly_shift_issue = "Hourly forecast mean is far from the historical hourly baseline."
 
-        if hourly_unique_predictions <= 2 or hourly_prediction_std < 0.5:
+        if hourly_unique_predictions <= 2 or hourly_prediction_std < 0.10:
             hourly_behavior_status = "Needs Review"
             hourly_behavior_icon = "🟡"
             hourly_behavior_issue = "Hourly predictions are highly similar across the 12-hour forecast horizon."
