@@ -752,97 +752,159 @@ elif st.session_state.page == "results":
 
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-        # ── Section 3: Prediction Behavior Check ─────────────────────────────
+        # ── Section 3: Monitoring & Drift Detection ──────────────────────────
         st.html("""
         <div class="sec-hdr">
-            <span class="sec-hdr-lbl">🩺 &nbsp;Prediction Behavior Check</span>
+            <span class="sec-hdr-lbl">🩺 &nbsp;Monitoring & Drift Detection</span>
         </div>
         """)
 
-        # Check current prediction behavior
+        # Current predictions
         predictions = daily_df["Predicted_ED_Visits"]
 
+        # ── 1) Prediction Behavior Check ────────────────────────────────────
+        prediction_mean = predictions.mean()
         prediction_std = predictions.std()
         prediction_min = predictions.min()
         prediction_max = predictions.max()
         prediction_range = prediction_max - prediction_min
         unique_predictions = predictions.nunique()
 
-        # Detect overly similar / flat predictions
         if prediction_std < 1 or prediction_range <= 2 or unique_predictions <= 2:
             behavior_status = "Needs Review"
             behavior_icon = "🟡"
-            issue_detected = "Low prediction variability"
-            recommendation = "Predictions are highly similar. Review feature sensitivity, input preprocessing, or retrain the model with stronger signals."
-            card_bg = "#fff8e8"
-            card_border = "#f0d28a"
-            main_color = "#b87900"
+            behavior_issue = "Low prediction variability"
         else:
             behavior_status = "Stable"
             behavior_icon = "🟢"
-            issue_detected = "No major issue detected"
-            recommendation = "Prediction values show acceptable variation. Continue monitoring over time."
-            card_bg = "#f7fbff"
-            card_border = "#d0e4f5"
-            main_color = "#1560a8"
+            behavior_issue = "Prediction variation looks acceptable"
 
+        # ── 2) Mean Shift / Drift Risk Check ────────────────────────────────
+        # Historical mean from training/test data
+        baseline_mean = 23.9
+
+        mean_shift = abs(prediction_mean - baseline_mean)
+
+        if mean_shift <= 5:
+            drift_risk = "Low"
+            drift_icon = "🟢"
+        elif mean_shift <= 10:
+            drift_risk = "Medium"
+            drift_icon = "🟡"
+        else:
+            drift_risk = "High"
+            drift_icon = "🔴"
+
+        # ── 3) Overall Monitoring Status ────────────────────────────────────
+        if drift_risk == "High" or behavior_status == "Needs Review":
+            monitoring_status = "Action Recommended"
+            monitoring_icon = "🟡"
+            recommendation = (
+                "Review prediction behavior, input preprocessing, and feature sensitivity. "
+                "If the issue continues, retraining the model is recommended."
+            )
+        else:
+            monitoring_status = "Healthy"
+            monitoring_icon = "🟢"
+            recommendation = "Continue monitoring predictions and incoming data over time."
+
+        # ── Display Card ────────────────────────────────────────────────────
         st.html(f"""
         <div style="
             background:white;
             border:1px solid #d0e4f5;
-            border-radius:16px;
+            border-radius:18px;
             box-shadow:0 4px 16px rgba(21,96,168,0.07);
-            padding:18px 22px;
-            margin-bottom:16px;
+            padding:20px 22px;
+            margin-bottom:18px;
             font-family:Arial, sans-serif;
         ">
+
             <div style="
                 display:grid;
                 grid-template-columns:repeat(3,1fr);
                 gap:14px;
+                margin-bottom:14px;
             ">
+
+                <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
+                        Monitoring Status
+                    </div>
+                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
+                        {monitoring_icon} {monitoring_status}
+                    </div>
+                </div>
+
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
                         Prediction Behavior
                     </div>
-                    <div style="font-size:18px;color:{main_color};font-weight:800;">
+                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
                         {behavior_icon} {behavior_status}
                     </div>
                 </div>
 
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Prediction Range
+                        Drift Risk
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
+                        {drift_icon} {drift_risk}
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:14px;
+                margin-bottom:14px;
+            ">
+
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        Mean Shift
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {mean_shift:.2f}
+                    </div>
+                </div>
+
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        Prediction Range
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
                         {prediction_range:.2f}
                     </div>
                 </div>
 
-                <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
-                    <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
                         Variation Std
                     </div>
-                    <div style="font-size:18px;color:#1560a8;font-weight:800;">
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
                         {prediction_std:.2f}
                     </div>
                 </div>
+
             </div>
 
             <div style="
-                margin-top:14px;
-                background:{card_bg};
-                border:1px solid {card_border};
+                background:#eaf4ff;
+                border:1px solid #d0e4f5;
                 border-radius:12px;
-                padding:12px 16px;
+                padding:13px 16px;
                 color:#1e3550;
                 font-size:14px;
                 line-height:1.6;
             ">
-                <strong style="color:{main_color};">Issue Detected:</strong> {issue_detected}<br>
-                <strong style="color:#1560a8;">Unique Prediction Values:</strong> {unique_predictions}<br>
+                <strong style="color:#1560a8;">Detected Issue:</strong> {behavior_issue}<br>
                 <strong style="color:#1560a8;">Recommendation:</strong> {recommendation}
             </div>
+
         </div>
         """)
 
