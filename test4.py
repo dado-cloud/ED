@@ -1095,7 +1095,6 @@ elif st.session_state.page == "results":
                 line-height:1.5;
             ">
                 Note: This section provides early monitoring signals for both daily and hourly forecasts based on prediction behavior and historical baseline comparison.
-                It does not calculate real-time MAE because actual future ED visit values are not available at prediction time.
             </div>
 
         </div>
