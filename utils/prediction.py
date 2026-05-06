@@ -110,6 +110,9 @@ def predict_daily(user_input):
     }
 
     return result, daily_xai
+
+
+
 def predict_daily_test_set(test_df):
     model, training_dataset = load_daily_model()
 
@@ -119,10 +122,9 @@ def predict_daily_test_set(test_df):
 
     test_df["series_id"] = "ED_1"
 
-    # نفس دالة الفيتشرز المستخدمة في التدريب
+    
     test_df = add_time_features_daily(test_df)
 
-    # مهم: لازم time_idx يكون متوافق مع الداتا
     if "time_idx" not in test_df.columns:
         test_df["time_idx"] = range(len(test_df))
 
