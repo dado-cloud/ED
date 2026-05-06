@@ -552,54 +552,43 @@ elif st.session_state.page == "input":
         }
 
         st.session_state.user_input = user_input
+        
+    with st.spinner("Generating forecast..."):
+    daily_df, daily_xai = predict_daily(user_input)
+    hourly_df, hourly_xai = predict_hourly(user_input)
 
-        with st.spinner("Generating forecast..."):
-            daily_df, daily_xai = predict_daily(user_input)
-            hourly_df, hourly_xai = predict_hourly(user_input)
+    # TEMP DEBUG
+    st.write("Daily predictions describe:")
+    st.write(daily_df["Predicted_ED_Visits"].describe())
 
-            # TEMP DEBUG 
-            st.write("Daily predictions describe:")
-            st.write(daily_df["Predicted_ED_Visits"].describe())
+    st.write("Daily prediction mean:")
+    st.write(daily_df["Predicted_ED_Visits"].mean())
 
-            st.write("Daily prediction mean:")
-            st.write(daily_df["Predicted_ED_Visits"].mean())
+    # Adjust hourly predictions to align with daily prediction
+    first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
+    hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
 
-            first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
-            hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
-
-            if hourly_sum > 0:
-                hourly_df["Predicted_ED_Visits"] = (
-                hourly_df["Predicted_ED_Visits"] / hourly_sum
-            ) * first_day_prediction * 0.5
-
+    if hourly_sum > 0:
         hourly_df["Predicted_ED_Visits"] = (
+            hourly_df["Predicted_ED_Visits"] / hourly_sum
+        ) * first_day_prediction * 0.5
+
+    hourly_df["Predicted_ED_Visits"] = (
         hourly_df["Predicted_ED_Visits"].round().astype(int)
-        )
+    )
 
-            
-            
-
-            first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
-            hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
-
-            if hourly_sum > 0:
-                hourly_df["Predicted_ED_Visits"] = (
-                    hourly_df["Predicted_ED_Visits"] / hourly_sum
-                ) * first_day_prediction * 0.5
-
-            hourly_df["Predicted_ED_Visits"] = (
-                hourly_df["Predicted_ED_Visits"].round().astype(int)
-            )
-
-        st.session_state.daily_df = daily_df
-        st.session_state.hourly_df = hourly_df
-        st.session_state.daily_xai = daily_xai
-        st.session_state.hourly_xai = hourly_xai
-        # st.session_state.page = "results"
-
-        # st.rerun()
+st.session_state.daily_df = daily_df
+st.session_state.hourly_df = hourly_df
+st.session_state.daily_xai = daily_xai
+st.session_state.hourly_xai = hourly_xai
 
 
+# st.session_state.page = "results"
+# st.rerun()
+
+
+
+        
       
 
 # ════════════════════════════════════════════════════════════════════════════
