@@ -841,7 +841,7 @@ elif st.session_state.page == "results":
         hourly_monitor = calculate_monitoring_metrics_from_df(
             test_df=hourly_test_df,
             model_name="Hourly Model",
-            actual_col="ED_visits",
+            actual_col="ED_visits_actual",
             pred_col="Predicted_ED_Visits"
         )
         
