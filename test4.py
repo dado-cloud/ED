@@ -767,31 +767,37 @@ elif st.session_state.page == "results":
         # Daily Model Monitoring
         # ═════════════════════════════════════════════════════════════════════
 
-        daily_predictions = daily_df["Predicted_ED_Visits"]
+        # ── Daily Monitoring Calculations ─────────────────────────────
+        historical_df = pd.read_csv("data/clean_ED_data.csv")
+        historical_df["date"] = pd.to_datetime(historical_df["date"])
+        historical_df = historical_df.sort_values("date").reset_index(drop=True)
 
-        daily_prediction_mean = daily_predictions.mean()
-        daily_prediction_std = daily_predictions.std()
-        daily_unique_predictions = daily_predictions.nunique()
+        recent_history = historical_df.tail(60)
 
-        # Historical baseline from actual daily ED data
-        daily_baseline_mean = 23.949210
-        daily_baseline_std = 21.660479
+        daily_baseline_mean = recent_history["ED_visits"].mean()
+        daily_baseline_std = recent_history["ED_visits"].std()
+
+        daily_prediction_mean = daily_df["Predicted_ED_Visits"].mean()
+        daily_prediction_std = daily_df["Predicted_ED_Visits"].std()
+        daily_unique_predictions = daily_df["Predicted_ED_Visits"].nunique()
 
         daily_mean_shift = abs(daily_prediction_mean - daily_baseline_mean)
 
+        # ── Mean Shift Status ─────────────────────────────
         if daily_mean_shift <= 5:
             daily_shift_status = "Low"
             daily_shift_icon = "🟢"
-            daily_shift_issue = "Daily forecast mean is close to the historical baseline."
+            daily_shift_issue = "Daily forecast mean is close to the recent 60-day baseline."
         elif daily_mean_shift <= 10:
             daily_shift_status = "Medium"
             daily_shift_icon = "🟡"
-            daily_shift_issue = "Daily forecast mean shows a moderate shift from the historical baseline."
+            daily_shift_issue = "Daily forecast mean shows a moderate shift from the recent 60-day baseline."
         else:
             daily_shift_status = "High"
             daily_shift_icon = "🔴"
-            daily_shift_issue = "Daily forecast mean is far from the historical baseline."
+            daily_shift_issue = "Daily forecast mean is far from the recent 60-day baseline."
 
+        # ── Prediction Behavior Status ─────────────────────────────
         if daily_unique_predictions <= 2 or daily_prediction_std < 1:
             daily_behavior_status = "Needs Review"
             daily_behavior_icon = "🟡"
@@ -801,6 +807,7 @@ elif st.session_state.page == "results":
             daily_behavior_icon = "🟢"
             daily_behavior_issue = "Daily prediction variation looks acceptable for the current forecast."
 
+        # ── Final Monitoring Status ─────────────────────────────
         if daily_shift_status == "High" or daily_behavior_status == "Needs Review":
             daily_monitoring_status = "Action Recommended"
             daily_monitoring_icon = "🟡"
