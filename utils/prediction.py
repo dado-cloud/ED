@@ -110,7 +110,46 @@ def predict_daily(user_input):
     }
 
     return result, daily_xai
+def predict_daily_test_set(test_df):
+    model, training_dataset = load_daily_model()
 
+    test_df = test_df.copy()
+    test_df["date"] = pd.to_datetime(test_df["date"])
+    test_df = test_df.sort_values("date").reset_index(drop=True)
+
+    test_df["series_id"] = "ED_1"
+
+    # نفس دالة الفيتشرز المستخدمة في التدريب
+    test_df = add_time_features_daily(test_df)
+
+    # مهم: لازم time_idx يكون متوافق مع الداتا
+    if "time_idx" not in test_df.columns:
+        test_df["time_idx"] = range(len(test_df))
+
+    prediction_dataset = training_dataset.from_dataset(
+        training_dataset,
+        test_df,
+        predict=True,
+        stop_randomization=True
+    )
+
+    prediction_dataloader = prediction_dataset.to_dataloader(
+        train=False,
+        batch_size=32,
+        num_workers=0
+    )
+
+    raw_predictions = model.predict(
+        prediction_dataloader,
+        mode="prediction"
+    )
+
+    predictions = raw_predictions.detach().cpu().numpy().reshape(-1)
+
+    predictions = np.round(predictions).astype(int)
+    predictions = np.maximum(predictions, 0)
+
+    return predictions[:len(test_df)]
 
 
 
