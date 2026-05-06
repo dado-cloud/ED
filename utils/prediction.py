@@ -28,27 +28,17 @@ def predict_daily(user_input):
     model, dataset = load_daily_model()
 
     df = pd.read_csv("data/clean_ED_data.csv")
-
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
 
-    # Keep raw target for debug/statistics
-    df["ED_visits_original"] = df["ED_visits"].copy()
-
-    # Match training target transformation
-    df["ED_visits"] = np.log1p(df["ED_visits"])
-
-    # Match training identifiers
     df["series_id"] = "ED_1"
-
-    # Rebuild / ensure time features and time_idx
     df = add_time_features_daily(df)
-
-    if "time_idx" not in df.columns:
-        df["time_idx"] = np.arange(len(df))
 
     target_date = pd.to_datetime(user_input["date"])
 
+    # Daily model setting from training:
+    # max_encoder_length = 60
+    # max_prediction_length = 14
     history_df = df.tail(60).copy()
 
     last_time_idx = int(history_df["time_idx"].iloc[-1])
@@ -64,10 +54,10 @@ def predict_daily(user_input):
         new_row["time_idx"] = last_time_idx + i + 1
         new_row["series_id"] = "ED_1"
 
-        # Unknown future target on log scale
+        # Future target is unknown
         new_row["ED_visits"] = 0
-        new_row["ED_visits_original"] = 0
 
+        # User inputs
         new_row["avg_weather_C"] = user_input["avg_weather_C"]
         new_row["avg_precip"] = user_input["avg_precip"]
         new_row["avg_snow"] = user_input["avg_snow"]
@@ -81,41 +71,22 @@ def predict_daily(user_input):
 
     future_df = pd.DataFrame(future_rows)
 
-    # Encoder history + decoder future
     prediction_data = pd.concat([history_df, future_df], ignore_index=True)
-
-    # Recalculate date-based features for future dates
     prediction_data = add_time_features_daily(prediction_data)
     prediction_data["series_id"] = "ED_1"
 
-    if "time_idx" not in prediction_data.columns:
-        prediction_data["time_idx"] = np.arange(len(prediction_data))
-
-    predict_dataset = dataset.from_dataset(
+    dataloader = dataset.from_dataset(
         dataset,
         prediction_data,
         predict=True,
         stop_randomization=True
-    )
-
-    dataloader = predict_dataset.to_dataloader(
-        train=False,
-        batch_size=64,
-        num_workers=0
-    )
+    ).to_dataloader(train=False, batch_size=64, num_workers=0)
 
     predictions = model.predict(dataloader)
     preds = extract_median_prediction(predictions)
 
-    raw_preds_debug = pd.Series(preds).describe().to_dict()
-    raw_preds_first14 = preds[:14]
-
     daily_values = np.expm1(preds)
-    daily_values = np.maximum(daily_values, 0)
     daily_values = np.round(daily_values).astype(int)
-
-    scaled_values_debug = pd.Series(daily_values).describe().to_dict()
-    scaled_values_first14 = daily_values[:14]
 
     n = min(len(future_df), len(daily_values))
 
@@ -125,23 +96,11 @@ def predict_daily(user_input):
     })
 
     daily_xai = {
-        "model": model,
-        "training_dataset": dataset,
-        "future_df": prediction_data,
-        "debug": {
-            "raw_preds_describe": raw_preds_debug,
-            "raw_preds_first14": raw_preds_first14,
-            "after_inverse_describe": scaled_values_debug,
-            "after_inverse_first14": scaled_values_first14,
-            "historical_mean": df["ED_visits_original"].mean(),
-            "historical_std": df["ED_visits_original"].std(),
-            "last_30_mean": df["ED_visits_original"].tail(30).mean(),
-            "last_60_mean": df["ED_visits_original"].tail(60).mean(),
-            "last_date_in_dataset": str(df["date"].max()),
-            "target_date": str(target_date),
-            "days_gap": int((target_date - df["date"].max()).days),
-        }
+    "model": model,
+    "training_dataset": dataset,
+    "future_df": prediction_data
     }
+
 
     return result, daily_xai
 
