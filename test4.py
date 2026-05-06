@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime, timezone, timedelta
 import base64
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from utils.prediction import predict_daily, predict_hourly, predict_daily_test_set, predict_hourly_test_set
 from utils.monitoring import calculate_monitoring_metrics_from_df
