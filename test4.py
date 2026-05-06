@@ -831,7 +831,6 @@ elif st.session_state.page == "results":
         hourly_test_df["ED_visits_actual"] = np.expm1(hourly_test_df["ED_visits"])
         hourly_test_df["ED_visits_actual"] = np.maximum(hourly_test_df["ED_visits_actual"], 0)
         
-
         
         hourly_test_predictions = predict_hourly_test_set(hourly_test_df)
         
@@ -842,7 +841,7 @@ elif st.session_state.page == "results":
         hourly_monitor = calculate_monitoring_metrics_from_df(
             test_df=hourly_test_df,
             model_name="Hourly Model",
-            actual_col="ED_visits",
+            actual_col="ED_visits_actual",
             pred_col="Predicted_ED_Visits"
         )
         
