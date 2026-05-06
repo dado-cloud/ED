@@ -24,6 +24,7 @@ def extract_median_prediction(predictions):
     return preds.flatten()
 
 
+
 def predict_daily(user_input):
     model, dataset = load_daily_model()
 
@@ -31,14 +32,17 @@ def predict_daily(user_input):
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
 
+    # Keep original values for display/debug only
+    df["ED_visits_original"] = df["ED_visits"].copy()
+
+    # Match training pipeline if Config 6 was trained using log1p target
+    df["ED_visits"] = np.log1p(df["ED_visits"])
+
     df["series_id"] = "ED_1"
     df = add_time_features_daily(df)
 
     target_date = pd.to_datetime(user_input["date"])
 
-    # Daily model setting from training:
-    # max_encoder_length = 60
-    # max_prediction_length = 14
     history_df = df.tail(60).copy()
 
     last_time_idx = int(history_df["time_idx"].iloc[-1])
@@ -54,10 +58,9 @@ def predict_daily(user_input):
         new_row["time_idx"] = last_time_idx + i + 1
         new_row["series_id"] = "ED_1"
 
-        # Future target is unknown
         new_row["ED_visits"] = 0
+        new_row["ED_visits_original"] = 0
 
-        # User inputs
         new_row["avg_weather_C"] = user_input["avg_weather_C"]
         new_row["avg_precip"] = user_input["avg_precip"]
         new_row["avg_snow"] = user_input["avg_snow"]
@@ -82,10 +85,12 @@ def predict_daily(user_input):
         stop_randomization=True
     ).to_dataloader(train=False, batch_size=64, num_workers=0)
 
+    predictions = model.predict(dataloader)
+    preds = extract_median_prediction(predictions)
+
     daily_values = np.expm1(preds)
     daily_values = np.maximum(daily_values, 0)
     daily_values = np.round(daily_values).astype(int)
-
 
     n = min(len(future_df), len(daily_values))
 
@@ -95,13 +100,14 @@ def predict_daily(user_input):
     })
 
     daily_xai = {
-    "model": model,
-    "training_dataset": dataset,
-    "future_df": prediction_data
+        "model": model,
+        "training_dataset": dataset,
+        "future_df": prediction_data
     }
 
-
     return result, daily_xai
+
+
 
 
 
