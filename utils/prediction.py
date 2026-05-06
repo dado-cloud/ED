@@ -25,6 +25,8 @@ def extract_median_prediction(predictions):
 
 
 def predict_daily(user_input):
+    model, dataset = load_daily_model()
+    
     df = pd.read_csv("data/clean_ED_data.csv")
     
     df["date"] = pd.to_datetime(df["date"])
