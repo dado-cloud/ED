@@ -90,6 +90,11 @@ def predict_daily(user_input):
     prediction_data = add_time_features_daily(prediction_data)
     prediction_data["series_id"] = "ED_1"
 
+
+
+    st.write("CHECK time_idx after add_time_features_daily:")
+    st.write(prediction_data[["date", "ED_visits", "time_idx"]].tail(20))
+
     dataloader = dataset.from_dataset(
         dataset,
         prediction_data,
