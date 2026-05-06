@@ -240,12 +240,12 @@ def predict_hourly(user_input):
         "Predicted_ED_Visits": hourly_values[:n]
     })
 
-    daily_xai = {
+    hourly_xai = {
         "model": model,
         "training_dataset": dataset,
         "future_df": prediction_data,
     }
 
-    return result, daily_xai
+    return result, hourly_xai
     
 
