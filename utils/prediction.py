@@ -82,8 +82,9 @@ def predict_daily(user_input):
         stop_randomization=True
     ).to_dataloader(train=False, batch_size=64, num_workers=0)
 
-    predictions = model.predict(dataloader)
-    preds = extract_median_prediction(predictions)
+    daily_values = np.expm1(preds)
+    daily_values = np.maximum(daily_values, 0)
+    daily_values = np.round(daily_values).astype(int)
 
     daily_values = np.expm1(preds)
     daily_values = np.round(daily_values).astype(int)
