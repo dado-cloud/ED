@@ -86,6 +86,15 @@ def predict_daily(user_input):
     prediction_data = add_time_features_daily(prediction_data)
     prediction_data["series_id"] = "ED_1"
 
+    
+    # DEBUG CHECKS
+    print("Last 60 original ED visits:")
+    print(df["ED_visits_original"].tail(60).describe())
+
+    print("Prediction data last 20 rows:")
+    print(prediction_data[["date", "ED_visits", "time_idx"]].tail(20))
+
+
     dataloader = dataset.from_dataset(
         dataset,
         prediction_data,
