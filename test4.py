@@ -557,25 +557,6 @@ elif st.session_state.page == "input":
         daily_df, daily_xai = predict_daily(user_input)
         hourly_df, hourly_xai = predict_hourly(user_input)
 
-        st.subheader("Daily Debug Output")
-
-        st.write("Raw predictions before inverse scaling:")
-        st.write(daily_xai["debug"]["raw_preds_describe"])
-        st.write(daily_xai["debug"]["raw_preds_first14"])
-
-        st.write("Predictions after inverse scaling:")
-        st.write(daily_xai["debug"]["after_inverse_describe"])
-        st.write(daily_xai["debug"]["after_inverse_first14"])
-
-        st.write("Historical mean:")
-        st.write(daily_xai["debug"]["historical_mean"])
-
-        st.write("Historical std:")
-        st.write(daily_xai["debug"]["historical_std"])
-
-        st.write("Last 30 days mean:")
-        st.write(daily_xai["debug"]["last_30_mean"])
-
         
         # Adjust hourly predictions to align with daily prediction
         first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
