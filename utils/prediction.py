@@ -91,10 +91,6 @@ def predict_daily(user_input):
     prediction_data["series_id"] = "ED_1"
 
 
-
-    st.write("CHECK time_idx after add_time_features_daily:")
-    st.write(prediction_data[["date", "ED_visits", "time_idx"]].tail(20))
-
     dataloader = dataset.from_dataset(
         dataset,
         prediction_data,
@@ -105,18 +101,18 @@ def predict_daily(user_input):
     predictions = model.predict(dataloader)
     preds = extract_median_prediction(predictions)
 
-    st.write("Raw preds before inverse scaling:")
-    st.write(pd.Series(preds).describe())
-    st.write(preds[:14])
+    # DEBUG: قبل inverse scaling
+    raw_preds_debug = pd.Series(preds).describe().to_dict()
+    raw_preds_first14 = preds[:14]
 
     daily_values = inverse_standard_scale(
         preds,
         df["ED_visits"]
     )
 
-    st.write("Daily values after inverse scaling:")
-    st.write(pd.Series(daily_values).describe())
-    st.write(daily_values[:14])
+    # DEBUG: بعد inverse scaling
+    scaled_values_debug = pd.Series(daily_values).describe().to_dict()
+    scaled_values_first14 = daily_values[:14]
 
     n = min(len(future_df), len(daily_values))
 
