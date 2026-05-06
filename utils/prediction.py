@@ -105,10 +105,18 @@ def predict_daily(user_input):
     predictions = model.predict(dataloader)
     preds = extract_median_prediction(predictions)
 
+    st.write("Raw preds before inverse scaling:")
+    st.write(pd.Series(preds).describe())
+    st.write(preds[:14])
+
     daily_values = inverse_standard_scale(
         preds,
         df["ED_visits"]
     )
+
+    st.write("Daily values after inverse scaling:")
+    st.write(pd.Series(daily_values).describe())
+    st.write(daily_values[:14])
 
     n = min(len(future_df), len(daily_values))
 
