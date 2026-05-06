@@ -28,21 +28,13 @@ def extract_median_prediction(predictions):
 def predict_daily(user_input):
     model, dataset = load_daily_model()
     
-    df = pd.read_csv("data/clean_ED_data.csv")
-    
+    # This should be the processed dataframe saved from the notebook
+    df = pd.read_pickle("models/dataset.pkl")
+
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
 
-    # Keep original ED_visits for debug/statistics only
-    df["ED_visits_original"] = df["ED_visits"].copy()
-
-    # Match notebook pipeline:
-    # Config 6 was evaluated using expm1(preds),
-    # so the input target history should be log1p-transformed.
-    df["ED_visits"] = np.log1p(df["ED_visits"])
-
-    df["series_id"] = "ED_1"
-    df = add_time_features_daily(df)
+  
 
     target_date = pd.to_datetime(user_input["date"])
 
@@ -65,7 +57,7 @@ def predict_daily(user_input):
         new_row["series_id"] = "ED_1"
 
         # Future target is unknown.
-        # Since target is log1p-transformed, 0 is still okay because log1p(0) = 0.
+        # Since target is log1p-transformed, 0 is okay because log1p(0) = 0.
         new_row["ED_visits"] = 0
         new_row["ED_visits_original"] = 0
 
@@ -83,28 +75,26 @@ def predict_daily(user_input):
 
     future_df = pd.DataFrame(future_rows)
 
+    # Important: model needs encoder history + decoder future
     prediction_data = pd.concat([history_df, future_df], ignore_index=True)
+
+    # Recalculate date-based features for the future dates
     prediction_data = add_time_features_daily(prediction_data)
     prediction_data["series_id"] = "ED_1"
 
-     # DEBUG CHECKS - show in Streamlit
-    st.write("Last 60 original ED visits:")
-    st.write(df["ED_visits_original"].tail(60).describe())
-
-    st.write("Prediction data last 20 rows:")
-    st.dataframe(prediction_data[["date", "ED_visits", "time_idx"]].tail(20))
-
-    st.write("Last date in dataset:", df["date"].max())
-    st.write("Target date:", target_date)
-    st.write("Days gap:", (target_date - df["date"].max()).days)
-
-
-    dataloader = dataset.from_dataset(
+    # Build prediction dataset e
+    predict_dataset = dataset.from_dataset(
         dataset,
         prediction_data,
         predict=True,
         stop_randomization=True
-    ).to_dataloader(train=False, batch_size=64, num_workers=0)
+    )
+
+    dataloader = predict_dataset.to_dataloader(
+        train=False,
+        batch_size=64,
+        num_workers=0
+    )
 
     predictions = model.predict(dataloader)
     preds = extract_median_prediction(predictions)
@@ -113,8 +103,7 @@ def predict_daily(user_input):
     raw_preds_debug = pd.Series(preds).describe().to_dict()
     raw_preds_first14 = preds[:14]
 
-    # Match notebook pipeline:
-    # Reverse log1p transformation using expm1.
+    # Reverse log1p transformation used during training
     daily_values = np.expm1(preds)
     daily_values = np.maximum(daily_values, 0)
     daily_values = np.round(daily_values).astype(int)
@@ -139,8 +128,6 @@ def predict_daily(user_input):
             "raw_preds_first14": raw_preds_first14,
             "after_inverse_describe": scaled_values_debug,
             "after_inverse_first14": scaled_values_first14,
-
-            # Use original raw values for meaningful statistics
             "historical_mean": df["ED_visits_original"].mean(),
             "historical_std": df["ED_visits_original"].std(),
             "last_30_mean": df["ED_visits_original"].tail(30).mean(),
