@@ -86,8 +86,6 @@ def predict_daily(user_input):
     daily_values = np.maximum(daily_values, 0)
     daily_values = np.round(daily_values).astype(int)
 
-    daily_values = np.expm1(preds)
-    daily_values = np.round(daily_values).astype(int)
 
     n = min(len(future_df), len(daily_values))
 
