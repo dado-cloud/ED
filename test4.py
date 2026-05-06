@@ -872,9 +872,12 @@ elif st.session_state.page == "results":
         hourly_alert_color = hourly_monitor["alert_color"]
 
         # ═════════════════════════════════════════════════════════════════════
-        # Display Daily + Hourly Cards 
+        # Display Daily + Hourly Monitoring Cards
         # ═════════════════════════════════════════════════════════════════════
-
+        
+        daily_mape_text = "N/A" if np.isnan(daily_mape) else f"{daily_mape:.2f}%"
+        hourly_mape_text = "N/A" if np.isnan(hourly_mape) else f"{hourly_mape:.2f}%"
+        
         st.html(f"""
         <div style="
             background:white;
@@ -885,7 +888,7 @@ elif st.session_state.page == "results":
             margin-bottom:18px;
             font-family:Arial, sans-serif;
         ">
-
+        
             <!-- Daily Model Card -->
             <div style="
                 color:#1560a8;
@@ -895,14 +898,14 @@ elif st.session_state.page == "results":
             ">
                 Daily Model Monitoring
             </div>
-
+        
             <div style="
                 display:grid;
                 grid-template-columns:repeat(3,1fr);
                 gap:14px;
                 margin-bottom:14px;
             ">
-
+        
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
                         Monitoring Status
@@ -911,34 +914,79 @@ elif st.session_state.page == "results":
                         {daily_monitoring_icon} {daily_monitoring_status}
                     </div>
                 </div>
-
+        
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Prediction Behavior
+                        Performance
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {daily_behavior_icon} {daily_behavior_status}
+                        {daily_performance_icon} {daily_performance_status}
                     </div>
                 </div>
-
+        
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Drift Risk
+                        Mean Shift Risk
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
                         {daily_shift_icon} {daily_shift_status}
                     </div>
                 </div>
-
+        
             </div>
-
+        
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:14px;
+                margin-bottom:14px;
+            ">
+        
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        MAE
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {daily_mae:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Average absolute error on test set
+                    </div>
+                </div>
+        
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        RMSE
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {daily_rmse:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Penalizes larger errors
+                    </div>
+                </div>
+        
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        MAPE
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {daily_mape_text}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Percentage error on test set
+                    </div>
+                </div>
+        
+            </div>
+        
             <div style="
                 display:grid;
                 grid-template-columns:repeat(2,1fr);
                 gap:14px;
                 margin-bottom:14px;
             ">
-
+        
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
                         Mean Shift
@@ -947,24 +995,24 @@ elif st.session_state.page == "results":
                         {daily_mean_shift:.2f}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Difference from daily historical baseline
+                        Actual mean: {daily_actual_mean:.2f} | Predicted mean: {daily_prediction_mean:.2f}
                     </div>
                 </div>
-
+        
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
-                        Forecast Variation
+                        Std Shift
                     </div>
                     <div style="font-size:16px;color:#1560a8;font-weight:800;">
-                        Std: {daily_prediction_std:.2f}
+                        {daily_std_icon} {daily_std_status} — {daily_std_shift:.2f}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Historical daily std: {daily_baseline_std:.2f}
+                        Actual std: {daily_actual_std:.2f} | Predicted std: {daily_prediction_std:.2f}
                     </div>
                 </div>
-
+        
             </div>
-
+        
             <div style="
                 background:{daily_alert_bg};
                 border:1px solid {daily_alert_border};
@@ -975,20 +1023,21 @@ elif st.session_state.page == "results":
                 line-height:1.6;
                 margin-bottom:24px;
             ">
-                <strong style="color:{daily_alert_color};">Monitoring Insight:</strong> {daily_behavior_issue}<br>
+                <strong style="color:{daily_alert_color};">Performance Insight:</strong> {daily_performance_issue}<br>
                 <strong style="color:{daily_alert_color};">Mean Shift Insight:</strong> {daily_shift_issue}<br>
+                <strong style="color:{daily_alert_color};">Std Shift Insight:</strong> {daily_std_issue}<br>
                 <strong style="color:#1560a8;">Recommendation:</strong> {daily_recommendation}
             </div>
-
-
+        
+        
             <!-- Divider -->
             <div style="
                 height:1px;
                 background:#e0effa;
                 margin:8px 0 24px;
             "></div>
-
-
+        
+        
             <!-- Hourly Model Card -->
             <div style="
                 color:#1560a8;
@@ -998,14 +1047,14 @@ elif st.session_state.page == "results":
             ">
                 Hourly Model Monitoring
             </div>
-
+        
             <div style="
                 display:grid;
                 grid-template-columns:repeat(3,1fr);
                 gap:14px;
                 margin-bottom:14px;
             ">
-
+        
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
                         Monitoring Status
@@ -1014,34 +1063,79 @@ elif st.session_state.page == "results":
                         {hourly_monitoring_icon} {hourly_monitoring_status}
                     </div>
                 </div>
-
+        
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Prediction Behavior
+                        Performance
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
-                        {hourly_behavior_icon} {hourly_behavior_status}
+                        {hourly_performance_icon} {hourly_performance_status}
                     </div>
                 </div>
-
+        
                 <div style="background:#f7fbff;border:1px solid #d0e4f5;border-radius:14px;padding:14px 16px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
-                        Drift Risk
+                        Mean Shift Risk
                     </div>
                     <div style="font-size:18px;color:#1560a8;font-weight:800;">
                         {hourly_shift_icon} {hourly_shift_status}
                     </div>
                 </div>
-
+        
             </div>
-
+        
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(3,1fr);
+                gap:14px;
+                margin-bottom:14px;
+            ">
+        
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        MAE
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {hourly_mae:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Average absolute error on test set
+                    </div>
+                </div>
+        
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        RMSE
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {hourly_rmse:.2f}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Penalizes larger errors
+                    </div>
+                </div>
+        
+                <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
+                    <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
+                        MAPE
+                    </div>
+                    <div style="font-size:16px;color:#1560a8;font-weight:800;">
+                        {hourly_mape_text}
+                    </div>
+                    <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
+                        Percentage error on test set
+                    </div>
+                </div>
+        
+            </div>
+        
             <div style="
                 display:grid;
                 grid-template-columns:repeat(2,1fr);
                 gap:14px;
                 margin-bottom:14px;
             ">
-
+        
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
                         Mean Shift
@@ -1050,24 +1144,24 @@ elif st.session_state.page == "results":
                         {hourly_mean_shift:.2f}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Difference from hourly historical baseline
+                        Actual mean: {hourly_actual_mean:.2f} | Predicted mean: {hourly_prediction_mean:.2f}
                     </div>
                 </div>
-
+        
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
-                        Forecast Variation
+                        Std Shift
                     </div>
                     <div style="font-size:16px;color:#1560a8;font-weight:800;">
-                        Std: {hourly_prediction_std:.2f}
+                        {hourly_std_icon} {hourly_std_status} — {hourly_std_shift:.2f}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Historical hourly std: {hourly_baseline_std:.2f}
+                        Actual std: {hourly_actual_std:.2f} | Predicted std: {hourly_prediction_std:.2f}
                     </div>
                 </div>
-
+        
             </div>
-
+        
             <div style="
                 background:{hourly_alert_bg};
                 border:1px solid {hourly_alert_border};
@@ -1077,22 +1171,26 @@ elif st.session_state.page == "results":
                 font-size:14px;
                 line-height:1.6;
             ">
-                <strong style="color:{hourly_alert_color};">Monitoring Insight:</strong> {hourly_behavior_issue}<br>
+                <strong style="color:{hourly_alert_color};">Performance Insight:</strong> {hourly_performance_issue}<br>
                 <strong style="color:{hourly_alert_color};">Mean Shift Insight:</strong> {hourly_shift_issue}<br>
+                <strong style="color:{hourly_alert_color};">Std Shift Insight:</strong> {hourly_std_issue}<br>
                 <strong style="color:#1560a8;">Recommendation:</strong> {hourly_recommendation}
             </div>
-
+        
             <div style="
                 margin-top:12px;
                 color:#6b7f95;
                 font-size:12px;
                 line-height:1.5;
             ">
-                Note: This section provides early monitoring signals for both daily and hourly forecasts based on prediction behavior and historical baseline comparison.
+                Note: This section evaluates daily and hourly models using test-set performance metrics and early drift-risk indicators based on mean and standard deviation shifts.
             </div>
-
+        
         </div>
         """)
+
+
+        
                
 
         # ── Section 4:  Forecast Explanation ───────────────
