@@ -232,7 +232,7 @@ def predict_hourly(user_input):
     hourly_values = np.maximum(hourly_values, 0)
     # __________calibration factor_______________
     calibration_factor = 1.75
-    daily_values = daily_values * calibration_factor
+    hourly_values = hourly_values * calibration_factor
     hourly_values = np.round(hourly_values).astype(int)
 
     n = min(len(future_df), len(hourly_values))
