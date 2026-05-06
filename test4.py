@@ -827,7 +827,9 @@ elif st.session_state.page == "results":
         hourly_test_df = pd.read_csv("data/test_data_hourly.csv")
         hourly_test_df["datetime"] = pd.to_datetime(hourly_test_df["datetime"])
         hourly_test_df = hourly_test_df.sort_values("datetime").reset_index(drop=True)
-
+        
+        # لأن test_data_hourly.csv محفوظ بعد log1p
+        # نخلي ED_visits كما هو للمودل، وننشئ عمود جديد للأرقام الأصلية للتقييم
         hourly_test_df["ED_visits_actual"] = np.expm1(hourly_test_df["ED_visits"])
         hourly_test_df["ED_visits_actual"] = np.maximum(hourly_test_df["ED_visits_actual"], 0)
         
@@ -835,6 +837,13 @@ elif st.session_state.page == "results":
         
         hourly_test_df = hourly_test_df.iloc[:len(hourly_test_predictions)].copy()
         hourly_test_df["Predicted_ED_Visits"] = hourly_test_predictions
+
+hourly_monitor = calculate_monitoring_metrics_from_df(
+    test_df=hourly_test_df,
+    model_name="Hourly Model",
+    actual_col="ED_visits_actual",
+    pred_col="Predicted_ED_Visits"
+)
         
         hourly_monitor = calculate_monitoring_metrics_from_df(
             test_df=hourly_test_df,
