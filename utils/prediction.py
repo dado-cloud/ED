@@ -92,7 +92,7 @@ def predict_daily(user_input):
     daily_values = np.maximum(daily_values, 0)
 
     # Small calibration to make predictions slightly higher
-    calibration_factor = 1.50
+    calibration_factor = 2
     daily_values = daily_values * calibration_factor
     daily_values = np.round(daily_values).astype(int)
 
