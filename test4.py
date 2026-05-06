@@ -595,9 +595,9 @@ elif st.session_state.page == "input":
         st.session_state.hourly_df = hourly_df
         st.session_state.daily_xai = daily_xai
         st.session_state.hourly_xai = hourly_xai
-        st.session_state.page = "results"
+        # st.session_state.page = "results"
 
-        st.rerun()
+        # st.rerun()
 
 
       
