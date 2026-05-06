@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 import base64
 import pandas as pd
 from pathlib import Path
-from utils.prediction import predict_daily, predict_hourly
+from utils.prediction import predict_daily, predict_hourly, predict_daily_test_set
 import re
 
 # ── Page config (only once) ──────────────────────────────────────────────────
