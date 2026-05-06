@@ -828,9 +828,7 @@ elif st.session_state.page == "results":
         hourly_test_df["datetime"] = pd.to_datetime(hourly_test_df["datetime"])
         hourly_test_df = hourly_test_df.sort_values("datetime").reset_index(drop=True)
         
-       
-        hourly_test_df["ED_visits_actual"] = np.expm1(hourly_test_df["ED_visits"])
-        hourly_test_df["ED_visits_actual"] = np.maximum(hourly_test_df["ED_visits_actual"], 0)
+
         
         hourly_test_predictions = predict_hourly_test_set(hourly_test_df)
         
