@@ -840,24 +840,33 @@ elif st.session_state.page == "results":
         hourly_prediction_std = hourly_predictions.std()
         hourly_unique_predictions = hourly_predictions.nunique()
 
-        # Historical baseline from actual hourly ED data
-        hourly_baseline_mean = 8.309594
-        hourly_baseline_std = 9.994404
+        # Historical baseline from the last 12 actual hourly ED records
+        historical_hourly_df = pd.read_csv("data/clean_ED_data_hours.csv")
+
+
+        historical_hourly_df["datetime"] = pd.to_datetime(historical_hourly_df["datetime"])
+
+        historical_hourly_df = historical_hourly_df.sort_values("date").reset_index(drop=True)
+
+        recent_hourly_history = historical_hourly_df.tail(12)
+
+        hourly_baseline_mean = recent_hourly_history["ED_visits"].mean()
+        hourly_baseline_std = recent_hourly_history["ED_visits"].std()
 
         hourly_mean_shift = abs(hourly_prediction_mean - hourly_baseline_mean)
 
         if hourly_mean_shift <= 5:
             hourly_shift_status = "Low"
             hourly_shift_icon = "🟢"
-            hourly_shift_issue = "Hourly forecast mean is close to the historical hourly baseline."
+            hourly_shift_issue = "Hourly forecast mean is close to the recent 12-hour historical baseline."
         elif hourly_mean_shift <= 10:
             hourly_shift_status = "Medium"
             hourly_shift_icon = "🟡"
-            hourly_shift_issue = "Hourly forecast mean shows a moderate shift from the historical hourly baseline."
+            hourly_shift_issue = "Hourly forecast mean shows a moderate shift from the recent 12-hour historical baseline."
         else:
             hourly_shift_status = "High"
             hourly_shift_icon = "🔴"
-            hourly_shift_issue = "Hourly forecast mean is far from the historical hourly baseline."
+            hourly_shift_issue = "Hourly forecast mean is far from the recent 12-hour historical baseline."
 
         if hourly_unique_predictions <= 2 or hourly_prediction_std < 0.10:
             hourly_behavior_status = "Needs Review"
