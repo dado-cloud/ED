@@ -126,9 +126,18 @@ def predict_daily(user_input):
     })
 
     daily_xai = {
-    "model": model,
-    "training_dataset": dataset,
-    "future_df": prediction_data
+        "model": model,
+        "training_dataset": dataset,
+        "future_df": prediction_data,
+        "debug": {
+            "raw_preds_describe": raw_preds_debug,
+            "raw_preds_first14": raw_preds_first14,
+            "after_inverse_describe": scaled_values_debug,
+            "after_inverse_first14": scaled_values_first14,
+            "historical_mean": df["ED_visits"].mean(),
+            "historical_std": df["ED_visits"].std(),
+            "last_30_mean": df["ED_visits"].tail(30).mean(),
+        }
     }
 
 
