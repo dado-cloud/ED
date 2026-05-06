@@ -231,7 +231,7 @@ def predict_hourly(user_input):
     hourly_values = np.expm1(preds)
     hourly_values = np.maximum(hourly_values, 0)
     # __________calibration factor_______________
-    calibration_factor = 1.75
+    calibration_factor = 2
     hourly_values = hourly_values * calibration_factor
     hourly_values = np.round(hourly_values).astype(int)
 
