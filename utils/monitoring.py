@@ -39,6 +39,11 @@ def calculate_monitoring_metrics_from_df(
     rmse_ratio = rmse / actual_mean if actual_mean != 0 else np.nan
     std_shift_ratio = std_shift / actual_std if actual_std != 0 else np.nan
 
+    # ═════════════════════════════════════════════════════════════════════
+    # Performance Status
+    # Measures prediction accuracy using MAE and RMSE relative to actual mean.
+    # ═════════════════════════════════════════════════════════════════════
+
     if mae_ratio <= 0.25 and rmse_ratio <= 0.35:
         performance_status = "Good"
         performance_icon = "🟢"
@@ -58,6 +63,11 @@ def calculate_monitoring_metrics_from_df(
             f"{model_name} performance shows high error and may require model review."
         )
 
+    # ═════════════════════════════════════════════════════════════════════
+    # Mean Shift Status
+    # Measures whether prediction mean is far from actual test-set mean.
+    # ═════════════════════════════════════════════════════════════════════
+
     if actual_std == 0 or np.isnan(actual_std):
         mean_shift_status = "Unknown"
         mean_shift_icon = "⚪"
@@ -74,6 +84,11 @@ def calculate_monitoring_metrics_from_df(
         mean_shift_status = "High"
         mean_shift_icon = "🔴"
         mean_shift_issue = "Prediction mean is far from the actual test-set mean."
+
+    # ═════════════════════════════════════════════════════════════════════
+    # Standard Deviation Shift Status
+    # Measures whether prediction variation is far from actual variation.
+    # ═════════════════════════════════════════════════════════════════════
 
     if np.isnan(std_shift_ratio):
         std_shift_status = "Unknown"
@@ -92,20 +107,50 @@ def calculate_monitoring_metrics_from_df(
         std_shift_icon = "🔴"
         std_shift_issue = "Prediction variation is very different from the actual test-set variation."
 
+    # ═════════════════════════════════════════════════════════════════════
+    # Overall Monitoring Status
+    # Important:
+    # Bad performance is not always drift.
+    # Drift is based on mean/std shift.
+    # Performance is based on MAE/RMSE.
+    # ═════════════════════════════════════════════════════════════════════
+
     if (
         performance_status == "Needs Review"
-        or mean_shift_status == "High"
-        or std_shift_status == "High"
+        and (mean_shift_status == "High" or std_shift_status == "High")
     ):
         monitoring_status = "High Drift Risk"
         monitoring_icon = "🔴"
         recommendation = (
             "Review the model predictions, preprocessing steps, and test-set distribution. "
-            "Retraining may be needed if this behavior continues."
+            "Retraining may be needed if both high error and distribution drift continue."
         )
         alert_bg = "#fff1f1"
         alert_border = "#f1b6b6"
         alert_color = "#b42318"
+
+    elif mean_shift_status == "High" or std_shift_status == "High":
+        monitoring_status = "High Drift Risk"
+        monitoring_icon = "🔴"
+        recommendation = (
+            "A strong distribution shift is detected. Review the test-set distribution, "
+            "recent input data, and preprocessing steps. Retraining may be needed if this drift continues."
+        )
+        alert_bg = "#fff1f1"
+        alert_border = "#f1b6b6"
+        alert_color = "#b42318"
+
+    elif performance_status == "Needs Review":
+        monitoring_status = "Performance Needs Review"
+        monitoring_icon = "🟡"
+        recommendation = (
+            "No strong drift is detected because the predicted mean and standard deviation "
+            "are close to the actual test-set distribution. However, prediction error is high, "
+            "so review the model accuracy, low-visit hours, and preprocessing steps."
+        )
+        alert_bg = "#fff8e8"
+        alert_border = "#f0d28a"
+        alert_color = "#b87900"
 
     elif (
         performance_status == "Needs Monitoring"
@@ -115,8 +160,8 @@ def calculate_monitoring_metrics_from_df(
         monitoring_status = "Medium Drift Risk"
         monitoring_icon = "🟡"
         recommendation = (
-            "Continue monitoring the model. The model is not failing, but some performance "
-            "or distribution indicators show moderate risk."
+            "Continue monitoring the model. Some performance or distribution indicators "
+            "show moderate risk, but the model is not failing."
         )
         alert_bg = "#fff8e8"
         alert_border = "#f0d28a"
@@ -142,6 +187,9 @@ def calculate_monitoring_metrics_from_df(
         "pred_std": pred_std,
         "mean_shift": mean_shift,
         "std_shift": std_shift,
+        "mae_ratio": mae_ratio,
+        "rmse_ratio": rmse_ratio,
+        "std_shift_ratio": std_shift_ratio,
         "performance_status": performance_status,
         "performance_icon": performance_icon,
         "performance_issue": performance_issue,
