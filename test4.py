@@ -838,13 +838,7 @@ elif st.session_state.page == "results":
         hourly_test_df = hourly_test_df.iloc[:len(hourly_test_predictions)].copy()
         hourly_test_df["Predicted_ED_Visits"] = hourly_test_predictions
 
-hourly_monitor = calculate_monitoring_metrics_from_df(
-    test_df=hourly_test_df,
-    model_name="Hourly Model",
-    actual_col="ED_visits_actual",
-    pred_col="Predicted_ED_Visits"
-)
-        
+     
         hourly_monitor = calculate_monitoring_metrics_from_df(
             test_df=hourly_test_df,
             model_name="Hourly Model",
