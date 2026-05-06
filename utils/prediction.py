@@ -29,7 +29,7 @@ def predict_daily(user_input):
     model, dataset = load_daily_model()
     
     # This should be the processed dataframe saved from the notebook
-    df = pd.read_pickle("models/dataset.pkl")
+    df = pd.read_csv('data/clean_ED_data.csv')
 
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
