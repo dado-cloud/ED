@@ -264,7 +264,7 @@ def predict_hourly_test_set(test_df):
 
     test_df["series_id"] = "ED_1"
 
-    # Match hourly preprocessing used during training
+    
     test_df = add_time_features_hourly(test_df)
 
     if "time_idx" not in test_df.columns:
