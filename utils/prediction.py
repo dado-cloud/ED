@@ -247,5 +247,55 @@ def predict_hourly(user_input):
     }
 
     return result, hourly_xai
+
+
+def predict_hourly_test_set(test_df):
+    model, training_dataset = load_hourly_model()
+
+    test_df = test_df.copy()
+
+    test_df["datetime"] = pd.to_datetime(test_df["datetime"])
+
+    if "date" not in test_df.columns:
+        test_df["date"] = test_df["datetime"].dt.date
+
+    test_df["date"] = pd.to_datetime(test_df["date"])
+    test_df = test_df.sort_values("datetime").reset_index(drop=True)
+
+    test_df["series_id"] = "ED_1"
+
+    # Match hourly preprocessing used during training
+    test_df = add_time_features_hourly(test_df)
+
+    if "time_idx" not in test_df.columns:
+        test_df["time_idx"] = range(len(test_df))
+
+    prediction_dataset = training_dataset.from_dataset(
+        training_dataset,
+        test_df,
+        predict=True,
+        stop_randomization=True
+    )
+
+    prediction_dataloader = prediction_dataset.to_dataloader(
+        train=False,
+        batch_size=32,
+        num_workers=0
+    )
+
+    raw_predictions = model.predict(
+        prediction_dataloader,
+        mode="prediction"
+    )
+
+    preds = extract_median_prediction(raw_predictions)
+
+    # Hourly model was trained using log1p(ED_visits),
+    # so reverse it using expm1.
+    predictions = np.expm1(preds)
+    predictions = np.maximum(predictions, 0)
+    predictions = np.round(predictions).astype(int)
+
+    return predictions[:len(test_df)]
     
 
