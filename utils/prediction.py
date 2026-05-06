@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import streamlit as st
 
 from utils.load_models import load_daily_model, load_hourly_model
 from utils.preprocessing import add_time_features_daily, add_time_features_hourly
@@ -86,13 +87,16 @@ def predict_daily(user_input):
     prediction_data = add_time_features_daily(prediction_data)
     prediction_data["series_id"] = "ED_1"
 
-    
-    # DEBUG CHECKS
-    print("Last 60 original ED visits:")
-    print(df["ED_visits_original"].tail(60).describe())
+     # DEBUG CHECKS - show in Streamlit
+    st.write("Last 60 original ED visits:")
+    st.write(df["ED_visits_original"].tail(60).describe())
 
-    print("Prediction data last 20 rows:")
-    print(prediction_data[["date", "ED_visits", "time_idx"]].tail(20))
+    st.write("Prediction data last 20 rows:")
+    st.dataframe(prediction_data[["date", "ED_visits", "time_idx"]].tail(20))
+
+    st.write("Last date in dataset:", df["date"].max())
+    st.write("Target date:", target_date)
+    st.write("Days gap:", (target_date - df["date"].max()).days)
 
 
     dataloader = dataset.from_dataset(
