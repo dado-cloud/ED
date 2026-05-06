@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime, timezone, timedelta
 import base64
+import pandas as pd
 from pathlib import Path
 from utils.prediction import predict_daily, predict_hourly
 import re
