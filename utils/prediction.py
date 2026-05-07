@@ -31,7 +31,7 @@ def predict_daily(user_input):
     df = pd.read_csv("data/clean_ED_data.csv")
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
-    df = df.fillna(method="ffill").fillna(0)
+    df = df.ffill().fillna(0)
 
     # Keep original values for display/debug only
     df["ED_visits_original"] = df["ED_visits"].copy()
