@@ -156,7 +156,7 @@ def predict_daily_test_set(test_df):
     predictions = np.expm1(predictions)
 
     # Optional: use this only if this is part of your deployed prediction logic
-    # predictions = predictions * 1.75
+    predictions = predictions * 1.75
 
 
     predictions = np.round(predictions).astype(int)
