@@ -151,6 +151,12 @@ def predict_daily_test_set(test_df):
     predictions = np.round(predictions).astype(int)
     predictions = np.maximum(predictions, 0)
 
+    predictions = raw_predictions.detach().cpu().numpy().reshape(-1)
+
+    predictions = np.round(predictions).astype(int)
+    
+    
+
     return predictions[:len(test_df)]
 
 
