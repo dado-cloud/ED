@@ -544,23 +544,22 @@ elif st.session_state.page == "input":
             st.rerun()
 
     if submitted:
-        user_input = {
-            "date": str(date),
-            "start_hour": start_hour,
-            "avg_weather_C": avg_weather_C,
-            "avg_precip": avg_precip,
-            "avg_snow": avg_snow,
-            "is_weekend": is_weekend,
-            "is_holiday": is_holiday,
-        }
+    user_input = {
+        "date": str(date),
+        "start_hour": start_hour,
+        "avg_weather_C": avg_weather_C,
+        "avg_precip": avg_precip,
+        "avg_snow": avg_snow,
+        "is_weekend": is_weekend,
+        "is_holiday": is_holiday,
+    }
 
-        st.session_state.user_input = user_input
-        
+    st.session_state.user_input = user_input
+
     with st.spinner("Generating forecast..."):
         daily_df, daily_xai = predict_daily(user_input)
         hourly_df, hourly_xai = predict_hourly(user_input)
 
-        
         # Adjust hourly predictions to align with daily prediction
         first_day_prediction = daily_df.iloc[0]["Predicted_ED_Visits"]
         hourly_sum = hourly_df["Predicted_ED_Visits"].sum()
