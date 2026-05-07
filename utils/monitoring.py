@@ -50,7 +50,7 @@ def calculate_monitoring_metrics_from_df(
         performance_issue = (
             f"{model_name} performance on the test set is within an acceptable range."
         )
-    elif mae_ratio <= 0.61 and rmse_ratio <= 0.70:
+    elif mae_ratio <= 0.60 and rmse_ratio <= 0.70::
         performance_status = "Needs Monitoring"
         performance_icon = "🟡"
         performance_issue = (
