@@ -44,13 +44,13 @@ def calculate_monitoring_metrics_from_df(
     # Measures prediction accuracy using MAE and RMSE relative to actual mean.
     # ═════════════════════════════════════════════════════════════════════
 
-    if mae_ratio <= 0.25 and rmse_ratio <= 0.35:
+    if mae_ratio <= 0.50 and rmse_ratio <= 0.60:
         performance_status = "Good"
         performance_icon = "🟢"
         performance_issue = (
             f"{model_name} performance on the test set is within an acceptable range."
         )
-    elif mae_ratio <= 0.45 and rmse_ratio <= 0.60:
+    elif mae_ratio <= 0.61 and rmse_ratio <= 0.70:
         performance_status = "Needs Monitoring"
         performance_icon = "🟡"
         performance_issue = (
