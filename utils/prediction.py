@@ -120,7 +120,6 @@ def predict_daily_test_set(test_df):
     test_df = test_df.copy()
     test_df["date"] = pd.to_datetime(test_df["date"])
     test_df = test_df.sort_values("date").reset_index(drop=True)
-    df = df.fillna(method="ffill").fillna(0)
 
     # Keep actual values for metrics
     test_df["ED_visits_original"] = test_df["ED_visits"].copy()
