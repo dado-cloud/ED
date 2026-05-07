@@ -120,9 +120,13 @@ def predict_daily_test_set(test_df):
     test_df["date"] = pd.to_datetime(test_df["date"])
     test_df = test_df.sort_values("date").reset_index(drop=True)
 
-    test_df["series_id"] = "ED_1"
+    # Keep actual values for metrics
+    test_df["ED_visits_original"] = test_df["ED_visits"].copy()
 
-    
+    # Match training pipeline if the model was trained using log1p target
+    test_df["ED_visits"] = np.log1p(test_df["ED_visits"])
+
+    test_df["series_id"] = "ED_1"
     test_df = add_time_features_daily(test_df)
 
     if "time_idx" not in test_df.columns:
@@ -146,14 +150,17 @@ def predict_daily_test_set(test_df):
         mode="prediction"
     )
 
-   predictions = raw_predictions.detach().cpu().numpy().reshape(-1)
+    predictions = raw_predictions.detach().cpu().numpy().reshape(-1)
 
+    # Convert predictions back from log scale
     predictions = np.expm1(predictions)
-    
+
+    # Optional: use this only if this is part of your deployed prediction logic
+    # predictions = predictions * 1.75
+
+
     predictions = np.round(predictions).astype(int)
     predictions = np.maximum(predictions, 0)
-        
-    
 
     return predictions[:len(test_df)]
 
