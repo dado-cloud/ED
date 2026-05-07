@@ -786,9 +786,14 @@ elif st.session_state.page == "results":
             pred_col="Predicted_ED_Visits"
         )
         
+        # Raw metrics are still kept internally
         daily_mae = daily_monitor["mae"]
         daily_rmse = daily_monitor["rmse"]
         daily_mape = daily_monitor["mape"]
+        
+        # Display ratios instead of raw MAE/RMSE
+        daily_mae_ratio = daily_monitor["mae_ratio"]
+        daily_rmse_ratio = daily_monitor["rmse_ratio"]
         
         daily_actual_mean = daily_monitor["actual_mean"]
         daily_prediction_mean = daily_monitor["pred_mean"]
@@ -819,6 +824,8 @@ elif st.session_state.page == "results":
         daily_alert_color = daily_monitor["alert_color"]
         
         daily_mape_text = "N/A" if np.isnan(daily_mape) else f"{daily_mape:.2f}%"
+        daily_mae_ratio_text = "N/A" if np.isnan(daily_mae_ratio) else f"{daily_mae_ratio:.2f}"
+        daily_rmse_ratio_text = "N/A" if np.isnan(daily_rmse_ratio) else f"{daily_rmse_ratio:.2f}"
         
         st.html(f"""
         <div style="
@@ -885,25 +892,25 @@ elif st.session_state.page == "results":
         
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
-                        MAE
+                        MAE Ratio
                     </div>
                     <div style="font-size:16px;color:#1560a8;font-weight:800;">
-                        {daily_mae:.2f}
+                        {daily_mae_ratio_text}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Average absolute error on test set
+                        MAE relative to actual mean
                     </div>
                 </div>
         
                 <div style="background:white;border:1px solid #e0effa;border-radius:12px;padding:12px 14px;">
                     <div style="font-size:12px;color:#3a5f82;font-weight:700;margin-bottom:6px;">
-                        RMSE
+                        RMSE Ratio
                     </div>
                     <div style="font-size:16px;color:#1560a8;font-weight:800;">
-                        {daily_rmse:.2f}
+                        {daily_rmse_ratio_text}
                     </div>
                     <div style="font-size:11px;color:#6b7f95;margin-top:4px;">
-                        Penalizes larger errors
+                        RMSE relative to actual mean
                     </div>
                 </div>
         
@@ -976,12 +983,12 @@ elif st.session_state.page == "results":
                 font-size:12px;
                 line-height:1.5;
             ">
-                Note: This section evaluates the model using test-set performance metrics and early drift-risk indicators based on mean and standard deviation shifts.
+                Note: This section evaluates the model using test-set performance ratios and early drift-risk indicators based on mean and standard deviation shifts.
             </div>
         
         </div>
         """)
-               
+                       
 
         # ── Section 4:  Forecast Explanation ───────────────
         if daily_xai is not None or hourly_xai is not None:
