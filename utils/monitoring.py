@@ -46,8 +46,6 @@ def calculate_monitoring_metrics_from_df(
     # ═════════════════════════════════════════════════════════════════════
     # Ratios
     # MAE Ratio and RMSE Ratio compare the error to the actual mean.
-    # If the ratio is greater than 1, the error is larger than the average
-    # actual ED visits, so the performance should be reviewed.
     # ═════════════════════════════════════════════════════════════════════
 
     mae_ratio = mae / actual_mean if actual_mean != 0 else np.nan
@@ -56,9 +54,7 @@ def calculate_monitoring_metrics_from_df(
 
     # ═════════════════════════════════════════════════════════════════════
     # Performance Status
-    # Measures prediction accuracy using MAE Ratio and RMSE Ratio.
-    # This is better for spiky ED data because it evaluates error relative
-    # to the actual test-set mean instead of relying only on raw MAE/RMSE.
+    # Measures prediction accuracy using MAE Ratio and RMSE Ratio
     # ═════════════════════════════════════════════════════════════════════
 
     if np.isnan(mae_ratio) or np.isnan(rmse_ratio):
@@ -124,12 +120,12 @@ def calculate_monitoring_metrics_from_df(
         std_shift_icon = "⚪"
         std_shift_issue = "Std shift cannot be evaluated because actual std is zero."
 
-    elif std_shift_ratio <= 0.50:
+    elif std_shift_ratio <= 0.90:
         std_shift_status = "Low"
         std_shift_icon = "🟢"
         std_shift_issue = "Prediction variation is close to the actual test-set variation."
 
-    elif std_shift_ratio <= 0.90:
+    elif std_shift_ratio <= 1.0:
         std_shift_status = "Medium"
         std_shift_icon = "🟡"
         std_shift_issue = "Prediction variation differs moderately from the actual test-set variation."
