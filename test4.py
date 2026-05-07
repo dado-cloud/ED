@@ -837,7 +837,7 @@ elif st.session_state.page == "results":
                 font-weight:800;
                 margin-bottom:14px;
             ">
-                Daily Model Monitoring
+                 Model Monitoring
             </div>
         
             <div style="
