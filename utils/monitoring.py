@@ -94,11 +94,11 @@ def calculate_monitoring_metrics_from_df(
         std_shift_status = "Unknown"
         std_shift_icon = "⚪"
         std_shift_issue = "Std shift cannot be evaluated because actual std is zero."
-    elif std_shift_ratio <= 0.30:
+    elif std_shift_ratio <= 0.50:
         std_shift_status = "Low"
         std_shift_icon = "🟢"
         std_shift_issue = "Prediction variation is close to the actual test-set variation."
-    elif std_shift_ratio <= 0.60:
+    elif std_shift_ratio <= 0.90:
         std_shift_status = "Medium"
         std_shift_icon = "🟡"
         std_shift_issue = "Prediction variation differs moderately from the actual test-set variation."
