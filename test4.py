@@ -767,7 +767,7 @@ elif st.session_state.page == "results":
         """)
         
         # ═════════════════════════════════════════════════════════════════════
-        # Daily Model Monitoring
+        # Model Monitoring
         # ═════════════════════════════════════════════════════════════════════
         
         daily_test_df = pd.read_csv("data/test_data_daily.csv")
@@ -781,7 +781,7 @@ elif st.session_state.page == "results":
         
         daily_monitor = calculate_monitoring_metrics_from_df(
             test_df=daily_test_df,
-            model_name="Daily Model",
+            model_name="Model",
             actual_col="ED_visits",
             pred_col="Predicted_ED_Visits"
         )
@@ -837,7 +837,7 @@ elif st.session_state.page == "results":
                 font-weight:800;
                 margin-bottom:14px;
             ">
-                 Model Monitoring
+                Model Monitoring
             </div>
         
             <div style="
@@ -976,13 +976,11 @@ elif st.session_state.page == "results":
                 font-size:12px;
                 line-height:1.5;
             ">
-                Note: This section evaluates the daily model using test-set performance metrics and early drift-risk indicators based on mean and standard deviation shifts.
+                Note: This section evaluates the model using test-set performance metrics and early drift-risk indicators based on mean and standard deviation shifts.
             </div>
         
         </div>
         """)
-
-        
                
 
         # ── Section 4:  Forecast Explanation ───────────────
